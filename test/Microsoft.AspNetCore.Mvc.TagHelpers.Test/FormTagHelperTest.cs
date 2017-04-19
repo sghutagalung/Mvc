@@ -56,8 +56,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 htmlGenerator: htmlGenerator,
                 metadataProvider: metadataProvider);
             var expectedPostContent = HtmlContentUtilities.HtmlContentToString(
-                    htmlGenerator.GenerateAntiforgery(viewContext),
-                    HtmlEncoder.Default);
+                htmlGenerator.GenerateAntiforgery(viewContext),
+                HtmlEncoder.Default);
             var formTagHelper = new FormTagHelper(htmlGenerator)
             {
                 ViewContext = viewContext,
@@ -68,9 +68,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             // Assert
             Assert.Empty(output.Attributes);
+            Assert.Empty(output.PreElement.GetContent());
             Assert.Empty(output.PreContent.GetContent());
-            Assert.True(output.Content.GetContent().Length == 0);
+            Assert.Empty(output.Content.GetContent());
             Assert.Equal(expectedPostContent, output.PostContent.GetContent());
+            Assert.Empty(output.PostElement.GetContent());
             Assert.Equal(expectedTagName, output.TagName);
         }
 
