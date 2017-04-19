@@ -13,23 +13,20 @@ namespace FormatterWebSite.Controllers
         [HttpPatch]
         public IActionResult PatchProduct([FromBody] JsonPatchDocument<Product> patchDoc)
         {
-            if (patchDoc != null)
-            {
-                var product = CreateProduct();
-
-                patchDoc.ApplyTo(product, ModelState);
-
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-
-                return Ok(product);
-            }
-            else
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+
+            var product = CreateProduct();
+            patchDoc.ApplyTo(product, ModelState);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            return Ok(product);
         }
 
         private Product CreateProduct()

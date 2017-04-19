@@ -123,6 +123,38 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(0, product.Reviews[0].Rating);
         }
 
+        [Fact]
+        public async Task AddOperation_InvalidValueForProperty_AddsErrorToModelState()
+        {
+            // Arrange
+            var input = "[{ 'op': 'add', 'path': 'Reviews/-', 'value': { 'Rating': 'not-a-double' }}]".Replace("'", "\"");
+            var request = GetPatchRequest(input);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Equal(
+                "{\"Product\":[\"The value '{\r\n  \"Rating\": \"not-a-double\"\r\n}' is invalid for target location.\"]}",
+                body);
+        }
+
+        [Fact]
+        public async Task InvalidJsonPatch_RequestEnvelope_ResultsInBadRequest()
+        {
+            // Arrange
+            var input = "[{ 'op': 'add', 'path': 'Reviews/-' }]".Replace("'", "\"");
+            var request = GetPatchRequest(input);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
         private HttpRequestMessage GetPatchRequest(string body)
         {
             return new HttpRequestMessage
