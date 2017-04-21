@@ -379,8 +379,18 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             {
                 var arguments = await GetArguments(handler);
 
-                var executor = handler.Executor;
-                result = await executor(handler.OnPage ? _page : _model, arguments);
+                Func<object, object[], Task<IActionResult>> executor = null;
+                for (var i = 0; i < actionDescriptor.HandlerMethods.Count; i++)
+                {
+                    if (object.ReferenceEquals(handler, actionDescriptor.HandlerMethods[i]))
+                    {
+                        executor = CacheEntry.Executors[i];
+                        break;
+                    }
+                }
+
+                var instance = actionDescriptor.ModelTypeInfo == actionDescriptor.HandlerTypeInfo ? _model : _page;
+                result = await executor(instance, arguments);
             }
 
             if (result == null)
@@ -393,10 +403,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         private async Task<object[]> GetArguments(HandlerMethodDescriptor handler)
         {
-            var arguments = new object[handler.Parameters.Length];
+            var arguments = new object[handler.Parameters.Count];
             var valueProvider = await CompositeValueProvider.CreateAsync(_pageContext, _pageContext.ValueProviderFactories);
 
-            for (var i = 0; i < handler.Parameters.Length; i++)
+            for (var i = 0; i < handler.Parameters.Count; i++)
             {
                 var parameter = handler.Parameters[i];
 
@@ -406,7 +416,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     parameter,
                     value: null);
 
-                arguments[i] = result.IsModelSet ? result.Model : parameter.DefaultValue;
+                if (result.IsModelSet)
+                {
+                    arguments[i] = result.Model;
+                }
             }
 
             return arguments;
