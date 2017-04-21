@@ -53,7 +53,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 #endif
         }
 
-
         [Fact]
         public async Task Page_Handler_FormAction()
         {

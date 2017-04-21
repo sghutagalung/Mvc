@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     /// <summary>
     /// <see cref="ITagHelper"/> implementation targeting &lt;form&gt; elements.
     /// </summary>
+    [HtmlTargetElement("form")]
     public class FormTagHelper : TagHelper
     {
         private const string ActionAttributeName = "asp-action";
@@ -135,9 +136,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             {
                 throw new ArgumentNullException(nameof(output));
             }
+
             if (Method != null)
             {
                 output.CopyHtmlAttribute(nameof(Method), context);
+            }
+            else
+            {
+                Method = "get";
             }
 
             var antiforgeryDefault = true;
@@ -240,11 +246,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                         output.PostContent.AppendHtml(tagBuilder.InnerHtml);
                     }
                 }
+            }
 
-                if (string.Equals(Method, "get", StringComparison.OrdinalIgnoreCase))
-                {
-                    antiforgeryDefault = false;
-                }
+            if (string.Equals(Method, "get", StringComparison.OrdinalIgnoreCase))
+            {
+                antiforgeryDefault = false;
             }
 
             if (Antiforgery ?? antiforgeryDefault)
